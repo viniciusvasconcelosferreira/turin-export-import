@@ -28,8 +28,7 @@ def gerar_arquivos_por_estado(df_exportacao, df_importacao, path_result):
 
     # Criar um DataFrame final para cada estado
     for estado in dados_combinados['SG_UF_NCM'].unique():
-        dados_estado = pd.DataFrame(
-            columns=['NCM'] + [f'{tipo}_{mes}' for mes in meses for tipo in ['Exp', 'Imp', 'Net']])
+        dados_estado = pd.DataFrame(columns=['NCM'] + [f'{tipo}_{mes}' for mes in meses for tipo in ['Exp', 'Imp', 'Net']] + ['EXP_2022', 'IMP_2022', 'NET_2022'])
 
         dados_estado_filtrados = dados_combinados[dados_combinados['SG_UF_NCM'] == estado]
 
@@ -52,7 +51,12 @@ def gerar_arquivos_por_estado(df_exportacao, df_importacao, path_result):
                 dados_estado.loc[index_ncm, [f'Imp_{mes}' for mes in meses]] += imp_values
                 dados_estado.loc[index_ncm, [f'Net_{mes}' for mes in meses]] += net_values
             else:
-                dados_estado.loc[len(dados_estado)] = [ncm] + exp_values + imp_values + net_values
+                dados_estado.loc[len(dados_estado)] = [ncm] + exp_values + imp_values + net_values + [0, 0, 0]
+
+        # Calcular as somas para 2022
+        dados_estado['EXP_2022'] = dados_estado[[f'Exp_{mes}' for mes in meses]].sum(axis=1)
+        dados_estado['IMP_2022'] = dados_estado[[f'Imp_{mes}' for mes in meses]].sum(axis=1)
+        dados_estado['NET_2022'] = dados_estado[[f'Net_{mes}' for mes in meses]].sum(axis=1)
 
         nome_arquivo = f'{estado}.csv'
 
