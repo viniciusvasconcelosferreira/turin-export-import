@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import ssl
 
@@ -8,12 +9,14 @@ link_exp = 'https://balanca.economia.gov.br/balanca/bd/comexstat-bd/ncm/EXP_2022
 link_imp = 'https://balanca.economia.gov.br/balanca/bd/comexstat-bd/ncm/IMP_2022.csv'
 path_exp = 'EXP_2022.csv'
 path_imp = 'IMP_2022.csv'
+path_result = ''
 
 
-def gerar_arquivos_por_estado(df_exportacao, df_importacao):
+def gerar_arquivos_por_estado(df_exportacao, df_importacao, path_result):
     meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
 
     exportacao_agrupada = df_exportacao.groupby(['CO_NCM', 'CO_MES', 'SG_UF_NCM'])['VL_FOB'].sum().reset_index()
+
     importacao_agrupada = df_importacao.groupby(['CO_NCM', 'CO_MES', 'SG_UF_NCM'])['VL_FOB'].sum().reset_index()
 
     # Combinar os valores de exportação e importação em um único DataFrame
@@ -53,10 +56,15 @@ def gerar_arquivos_por_estado(df_exportacao, df_importacao):
 
         nome_arquivo = f'{estado}.csv'
 
-        # Salvar os dados em um arquivo CSV
-        dados_estado.to_csv(nome_arquivo, sep=';', index=False)
+        # Verificar se o caminho do resultado está vazio
+        if not path_result:
+            path_result = os.getcwd()  # Usar o diretório atual
 
-        print(f"Arquivo '{nome_arquivo}' gerado com sucesso!")
+        # Salvar os dados em um arquivo CSV
+        caminho_arquivo = os.path.join(path_result, nome_arquivo)
+        dados_estado.to_csv(caminho_arquivo, sep=';', index=False)
+
+        print(f"Arquivo '{caminho_arquivo}' gerado com sucesso!")
 
 
 if not path_exp or not path_imp:
@@ -66,4 +74,4 @@ else:
     df_exportacao = pd.read_csv(path_exp, delimiter=';', quoting=1)
     df_importacao = pd.read_csv(path_imp, delimiter=';', quoting=1)
 
-gerar_arquivos_por_estado(df_exportacao, df_importacao)
+gerar_arquivos_por_estado(df_exportacao, df_importacao, path_result)
